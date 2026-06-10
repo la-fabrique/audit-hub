@@ -114,6 +114,14 @@ Pour chaque norme applicable :
 | `vulnerability-management.md` | Req. 6 (patch <1 mois critique), Req. 11 (scan trimestriel, pentest annuel) | **(M)** |
 | `secrets-management.md` | Req. 3.5 (gestion clés cryptographiques) | **(M)** |
 
+**Questions spécifiques PCI-DSS** :
+- Le périmètre CDE (Cardholder Data Environment) est-il délimité et documenté ?
+- L'organisation passe-t-elle par un QSA (audit externe) ou utilise-t-elle une SAQ (auto-évaluation) ? Quel niveau SAQ ?
+- La segmentation réseau entre le CDE et le reste de l'infrastructure est-elle validée par un test de pénétration ?
+- Les numéros de carte (PAN) sont-ils tokenisés ou tronqués partout sauf dans le CDE ?
+- Les logs du CDE sont-ils centralisés et conservés 12 mois (3 mois online minimum) ?
+- Un plan de réponse aux incidents couvrant spécifiquement les violations de données de paiement est-il en place ?
+
 ---
 
 ## NIS2 (Network and Information Security Directive 2)
@@ -153,6 +161,14 @@ Pour chaque norme applicable :
 | `vulnerability-management.md` | CC7.1 (détection des défauts), CC4.1 (COSO) | **(M)** |
 | `encryption-data-protection.md` | C1.1 (confidentialité), CC6.7 (chiffrement) | **(M)** |
 | `network-security.md` | CC6.6 (périmètre logique), CC6.7 (communications) | **(R)** |
+
+**Questions spécifiques SOC 2** :
+- Quels Trust Service Criteria sont dans le scope de l'audit (Sécurité seule ? + Disponibilité, Confidentialité…) ?
+- L'organisation vise-t-elle un Type I (à date) ou un Type II (sur une période, généralement 6 mois) ?
+- Un rapport SOC 2 est-il disponible pour les clients sur demande (NDA) ?
+- Comment l'organisation collecte-t-elle les preuves (evidence) pour l'audit (outil GRC, manuel…) ?
+- Un programme de gestion des vendors (sous-traitants) est-il en place pour évaluer leurs propres contrôles ?
+- Les changements de configuration et d'accès sont-ils soumis à un processus de change management auditable ?
 
 ---
 
