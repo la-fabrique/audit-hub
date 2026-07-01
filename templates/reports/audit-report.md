@@ -59,6 +59,8 @@ usage: |
 **Observation**
 [Description factuelle du problème constaté — ce qui a été vu, pas ce qui devrait être.]
 
+**Preuve :** [Observé | Déclaré | Déduit]
+
 **Risque**
 [Impact si non corrigé — conséquence concrète pour le business ou la sécurité.]
 
@@ -111,9 +113,49 @@ usage: |
 ## Évaluation par domaine
 
 > Marquer **N/A — hors scope** pour les domaines listés dans `profil.audit.excluded`.
-> Score 1–5 obtenu par conversion (voir `profiles/schema.md` § Mapping maturité).
+> Chaque domaine affiche deux scores distincts, jamais moyennés ensemble
+> (voir `profiles/schema.md` § Score déclaratif et score observé d'un domaine) :
+> - **Score déclaratif** — conversion des champs `maturity.*` du profil
+>   (§ Mapping maturité), toujours "non vérifié".
+> - **Score observé** — conversion du pourcentage pondéré d'items de
+>   checklist cochés (§ Scoring des checklists), plafonné à 2 si un item
+>   `[B]` est en échec. Si aucune checklist n'est vérifiable pour ce
+>   domaine, indiquer `N/A — aucune checklist vérifiable`.
 
-### Sécurité — [Score] / 5
+### Sécurité
+
+**Score déclaratif (non vérifié) : [Score] / 5**
+**Score observé : [Score] / 5**
+
+**Points forts :**
+-
+
+**Points faibles :**
+-
+
+**Checklists utilisées :** [LISTE — ex. authentication-checklist.md (v1.0)]
+
+---
+
+### Architecture
+
+**Score déclaratif (non vérifié) : [Score] / 5**
+**Score observé : [Score] / 5**
+
+**Points forts :**
+-
+
+**Points faibles :**
+-
+
+**Checklists utilisées :** [LISTE — ex. architecture-review-checklist.md (v1.0)]
+
+---
+
+### Qualité de code
+
+**Score déclaratif (non vérifié) : [Score] / 5**
+**Score observé : [Score] / 5**
 
 **Points forts :**
 -
@@ -125,17 +167,25 @@ usage: |
 
 ---
 
-### Architecture — [Score] / 5
+### Infra / DevOps
+
+**Score déclaratif (non vérifié) : [Score] / 5**
+**Score observé : [Score] / 5**
 
 **Points forts :**
 -
 
 **Points faibles :**
 -
+
+**Checklists utilisées :** [LISTE]
 
 ---
 
-### Qualité de code — [Score] / 5
+### Organisation
+
+**Score déclaratif (non vérifié) : [Score] / 5**
+**Score observé : [Score] / 5**
 
 **Points forts :**
 -
@@ -143,25 +193,7 @@ usage: |
 **Points faibles :**
 -
 
----
-
-### Infra / DevOps — [Score] / 5
-
-**Points forts :**
--
-
-**Points faibles :**
--
-
----
-
-### Organisation — [Score] / 5
-
-**Points forts :**
--
-
-**Points faibles :**
--
+**Checklists utilisées :** [LISTE]
 
 ---
 

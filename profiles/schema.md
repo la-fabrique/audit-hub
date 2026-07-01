@@ -89,11 +89,26 @@ l'audit de manière interactive."
 
 ## Règles de sélection des checklists par l'IA
 
-L'IA doit appliquer cette logique lors de la lecture du profil. **Cette table
-fait foi** (sélection « in/out »). Les champs `ai-selection-criteria` des
-checklists sont consultés ensuite pour **ajuster la priorité** des checklists
-déjà retenues, mais ne peuvent pas réintroduire une checklist écartée par les
-règles ci-dessous.
+L'IA doit appliquer cette logique lors de la lecture du profil, dans cet
+ordre :
+
+1. **Sélection in/out** : la table § Règles générales (et § Règles
+   réglementaires) fait foi pour décider quelles checklists entrent dans le
+   périmètre de l'audit. Une checklist non retenue par ces règles est
+   écartée.
+2. **Ajustement de priorité uniquement** : les champs `ai-selection-criteria`
+   des checklists déjà retenues à l'étape 1 sont consultés pour ajuster leur
+   score de priorité (bonus `+N`, voir § Échelle de priorité numérique).
+   `ai-selection-criteria` ne peut **jamais réintroduire** une checklist déjà
+   écartée à l'étape 1, même si son contenu décrit un contexte très
+   pertinent pour le profil audité.
+
+**Exemple contre-intuitif** : un profil sans aucune donnée persistante en
+production (pas de règle § Règles générales qui matche) ne verra jamais
+`backup-recovery-checklist.md` proposée, même si son `ai-selection-criteria`
+mentionne un bonus de priorité HDS/ISO27001/PCI-DSS applicable au secteur du
+profil — l'étape 2 ne s'exécute jamais pour une checklist qui n'a pas franchi
+l'étape 1.
 
 #### Échelle de priorité numérique
 
@@ -173,10 +188,20 @@ Le champ `audit.depth` du profil pilote le scope retenu :
 
 ## Scoring
 
+Le framework distingue deux mécanismes qui **ne se combinent jamais dans un
+même calcul** : le **mapping maturité** convertit une auto-évaluation
+déclarative du profil (`maturity.*`, non vérifiée) en score, et le
+**scoring de checklist** convertit un constat observé (items cochés par
+l'IA à partir du code/config/entretien) en score. Un domaine produit donc
+toujours deux scores séparés — voir § Score déclaratif et score observé
+d'un domaine.
+
 ### Scoring des checklists
 
 Toutes les checklists utilisent une **unique échelle à 5 paliers** pour
-convertir le pourcentage d'items cochés en un score 1–5 :
+convertir le pourcentage (ou le pourcentage pondéré, voir § Pondération)
+d'items cochés en un score 1–5. Règle résumée : **moins de 30 % = 1, chaque
+palier suivant +20 points, sauf le dernier** (70–89 % au lieu de 70–90 %) :
 
 | % items cochés | Score | Label |
 |---|---|---|
@@ -186,13 +211,46 @@ convertir le pourcentage d'items cochés en un score 1–5 :
 | 30–49 % | 2 | Critique |
 | < 30 % | 1 | Défaillant |
 
+#### Pondération des items de checklist
+
+Un item de checklist peut porter un poids optionnel, en plus du marqueur
+`[B]` :
+
+```
+- [ ] `[W2]` Les tokens de session ne sont jamais visibles dans les logs
+- [ ] Les mots de passe communs sont rejetés
+```
+
+- Poids par défaut si non précisé : `1`.
+- Poids déclarable : `[W2]` (élevé) ou `[W3]` (critique non-bloquant). Un
+  item déjà marqué `[B]` n'a pas besoin de poids : son échec plafonne déjà
+  le score (voir ci-dessous), un poids serait sans effet.
+- Le score d'une checklist devient : `(somme des poids des items cochés) /
+  (somme des poids de tous les items applicables) × 100`, converti ensuite
+  via la table ci-dessus.
+- Un item non applicable au contexte audité (ex. section JWT d'une checklist
+  d'authentification pour une app qui n'utilise pas JWT) est exclu du
+  calcul, poids compris — il n'entre ni au numérateur ni au dénominateur.
+- Les checklists existantes restent valides sans modification : tous les
+  items ont un poids implicite de `1`, donc le calcul ci-dessus est
+  identique au calcul précédent pour une checklist sans poids déclaré.
+
 #### Items éliminatoires (blocker)
 
-Certains items de checklist sont marqués `[B]` (blocker). Si **un seul item
-blocker est en échec**, le score du domaine est **plafonné à 2** (Critique),
-quel que soit le pourcentage global. Ces items représentent des failles dont
-la gravité rend le score global non représentatif (ex. mots de passe en
-clair, absence totale de backup, secrets en dur dans le code).
+> **Règle** : si un seul item marqué `[B]` (blocker) est en échec, le
+> **score observé du domaine est plafonné à 2** (Critique), quel que soit
+> le pourcentage global obtenu par ailleurs.
+
+Ces items représentent des failles dont la gravité rend le score global non
+représentatif (ex. mots de passe en clair, absence totale de backup,
+secrets en dur dans le code).
+
+**Exemple** : une checklist cochée à 85 % (score brut = 4, Acceptable) mais
+contenant un item `[B]` en échec (ex. secrets en dur détectés dans le code)
+→ le score observé du domaine est **2**, pas 4. Le plafond blocker
+s'applique uniquement au **score observé** (voir ci-dessous) : un item
+blocker est par définition un constat, jamais une déclaration, donc il n'a
+aucun effet sur le score déclaratif.
 
 ### Mapping maturité (profil → score)
 
@@ -207,8 +265,31 @@ templates) utilise un score 1–5. Conversion :
 | `automated` / `extensive` / `full-observability` | 4 | Géré |
 | `advanced` | 5 | Optimisé |
 
-### Score global d'un domaine
+### Score déclaratif et score observé d'un domaine
 
-Le score global d'un domaine est la **moyenne arrondie** des scores par axe
-applicable (maturité) et des scores des checklists associées. Si un item
-blocker est en échec, le score est plafonné à 2.
+Un domaine produit **deux scores rapportés côte à côte, jamais moyennés
+ensemble** (`templates/reports/audit-report.md` § Évaluation par domaine
+affiche `Score déclaratif : X/5` et `Score observé : Y/5`) :
+
+- **Score déclaratif** : moyenne arrondie des scores par axe de maturité
+  applicable au domaine (§ Mapping maturité), calculée uniquement à partir
+  des champs `maturity.*` du profil. Toujours labellisé "déclaratif — non
+  vérifié" dans le rapport.
+- **Score observé** : moyenne arrondie des scores des checklists associées
+  au domaine uniquement (§ Scoring des checklists) — aucune composante
+  déclarative. Si un item blocker d'une checklist du domaine est en échec,
+  le score observé est plafonné à 2 (§ Items éliminatoires).
+- **Domaine sans checklist vérifiable** (aucun accès, mode entretien
+  uniquement) : le score observé est marqué `N/A — aucune checklist
+  vérifiable`, seul le score déclaratif est affiché, avec la mention "non
+  vérifié" en évidence.
+
+### Versionnage des checklists
+
+Le frontmatter YAML d'une checklist peut déclarer `version: 1.0` et
+`last-updated: YYYY-MM-DD`. Ces clés sont optionnelles : une checklist qui
+ne les déclare pas est traitée comme `version: 1.0`. Le rapport final liste,
+pour chaque checklist utilisée, sa version au moment de l'audit (ex.
+`authentication-checklist.md (v1.0)`) — objectif de traçabilité ("quelle
+version de la checklist a produit ce score"), sans système de migration ni
+règle de compatibilité entre versions.
