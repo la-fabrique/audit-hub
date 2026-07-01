@@ -125,6 +125,7 @@ obtient un score final de 8.
 | `deployment` contient `K8s` | `domains/security/network-security.md` + `domains/infra-devops/infrastructure-hardening.md` (sections K8s) | Haute |
 | Tout projet avec du code | `domains/security/checklists/vulnerability-management-checklist.md` + `domains/security/dependency-security.md` | Haute |
 | Tout projet avec des utilisateurs | `domains/security/checklists/authentication-checklist.md` + `domains/security/access-control.md` | Haute |
+| Tout projet avec des données persistantes en production | `domains/infra-devops/checklists/backup-recovery-checklist.md` | Haute |
 
 ### Règles réglementaires (élèvent la priorité des items marqués **M** dans regulatory-mapping.md)
 

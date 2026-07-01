@@ -3,7 +3,10 @@ domain: architecture
 category: review
 applicable-to: [web, api, saas, cloud, microservices, monolith, enterprise]
 tags: [architecture, revue, couplage, scalabilité, résilience, solid, modularité]
-related-knowledge: ../
+related-knowledge:
+  - ../coupling-and-dependencies.md
+  - ../scalability-patterns.md
+  - ../frameworks-and-standards.md
 ai-selection-criteria: |
   Inclure cette checklist si : le périmètre d'audit couvre l'architecture technique.
   Bonus de priorité +2 si l'organisation a subi des incidents de production liés à
@@ -32,7 +35,7 @@ ai-selection-criteria: |
 ## Scalabilité et résilience
 
 - [ ] Les app servers sont stateless (pas de sessions en mémoire locale)
-- [ ] Les SPOF (Single Points of Failure) sont identifiés et documentés
+- [ ] `[B]` Les SPOF (Single Points of Failure) sont identifiés et documentés
 - [ ] Un mécanisme de circuit breaker existe pour les appels inter-services
 - [ ] Les opérations non-temps-réel passent par une queue asynchrone
 - [ ] La stratégie de cache est définie avec TTL et politique d'invalidation
@@ -59,6 +62,15 @@ ai-selection-criteria: |
 - [ ] Les décisions architecturales majeures sont tracées dans des ADR
 - [ ] La roadmap d'architecture (dette technique, migrations) est documentée
 
+## Cadre et gouvernance d'architecture
+
+- [ ] Un cadre ou une convention de documentation architecturale est en
+      place (C4, ArchiMate, TOGAF, ou convention interne équivalente)
+- [ ] Les décisions architecturales significatives sont tracées (ADR ou
+      équivalent)
+- [ ] Les diagrammes d'architecture existants ont été mis à jour dans les
+      6 derniers mois
+
 ## Gouvernance
 
 - [ ] Un rôle d'architecte est formellement défini (personne ou comité)
@@ -68,7 +80,8 @@ ai-selection-criteria: |
 
 ## Score d'évaluation
 
-Compter le nombre de cases cochées :
+Compter le nombre de cases cochées. Les items `[B]` sont éliminatoires : si
+un seul est en échec, le score est plafonné à 2.
 
 | % items cochés | Score | Niveau |
 |---|---|---|
